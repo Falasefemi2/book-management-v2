@@ -9,7 +9,7 @@ from fastapi.security import  OAuth2PasswordRequestForm
 router = APIRouter()
 
 @router.post("/register", response_model=UserCreate)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.username == user.username).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
@@ -22,7 +22,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return {"username": new_user.username, "password": user.password}  # Return original password for schema compatibility
 
 @router.post("/login", response_model=dict)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
